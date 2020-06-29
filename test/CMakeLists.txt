@@ -25,13 +25,14 @@ if(MSVC)
     set_property( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT CXTest )
     set_target_properties( CXTest PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
-    target_compile_options(CXTest PRIVATE "$<$<CONFIG:Debug>:/MTd>")
-    target_compile_options(CXTest PRIVATE "$<$<CONFIG:Release>:/MT>")
-    target_compile_options(CXTest PRIVATE "$<$<CONFIG:MinSizeRel>:/MT>")
-    target_compile_options(CXTest PRIVATE "$<$<CONFIG:RelWithDebInfo>:/MT>")
-
+    target_compile_options(CXTest PRIVATE "$<$<CONFIG:Debug>:/MTd>"         )
+    target_compile_options(CXTest PRIVATE "$<$<CONFIG:Release>:/MT>"        "$<$<CONFIG:Release>:/O2>"        "$<$<CONFIG:Release>:/Oi>"       )
+    target_compile_options(CXTest PRIVATE "$<$<CONFIG:MinSizeRel>:/MT>"     "$<$<CONFIG:MinSizeRel>:/O1>"     "$<$<CONFIG:MinSizeRel>:/Oi>"    )
+    target_compile_options(CXTest PRIVATE "$<$<CONFIG:RelWithDebInfo>:/MT>" "$<$<CONFIG:RelWithDebInfo>:/O2>" "$<$<CONFIG:RelWithDebInfo>:/Oi>")
     target_compile_options(CXTest PRIVATE "/Zc:__cplusplus")
-    target_compile_options(CXTest PRIVATE "/fp:fast") # not for clang-cl
+    target_compile_options(CXTest PRIVATE "/fp:fast")
+
+    #if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 else()
 endif()
 

@@ -16,8 +16,8 @@
 namespace cyber
 {
 
-    // operator new allocator with alignment support - compatible with stl types
-    // warning: when using with std::vector, only the begin() memory is gauranteed to be aligned (TODO investigate)
+    // operator new allocator with alignment support - compatible with stl
+    // warning: when using with containers that allocate in large blocks (std::vector) this only allocates the large block with alignment
     template<typename T, size_t alignment>
     struct Allocator
     {
@@ -32,11 +32,7 @@ namespace cyber
         constexpr Allocator() noexcept {}
         constexpr Allocator(const Allocator&) noexcept = default;
         template <class Tx> constexpr Allocator(Allocator<Tx, alignment> const&) noexcept {}
-
-        template <typename Tx>
-        struct rebind {
-            typedef Allocator<Tx, alignment> other;
-        };
+        template <typename Tx> struct rebind { typedef Allocator<Tx, alignment> other; };
 
         inline T* allocate(std::size_t n) noexcept
         {
@@ -53,7 +49,7 @@ namespace cyber
     // preallocates a large block of memory from which to allocate from
     // operates using the free-list technique, using free object memory to store a link to the next free item
     // automatically allocates new block when capacity reached
-    // DO NOT USE WITH std::vector
+    // DO NOT USE WITH std::vector, WARNING: std::list allocates on constructor
     template<typename T, size_t alignment = 64, size_t blockCapacity = 0xFFFF / sizeof(T) /*64kb*/>
     struct PoolAllocator
     {
@@ -94,14 +90,14 @@ namespace cyber
             Block* block = reinterpret_cast<Block*>(data);
             block->prev = nullptr;
             block->next = nullptr;
-            
 
             // assign the free nodes of the pool
             T* data_begin = reinterpret_cast<T*>(block + 1);
             T* data_last = data_begin + n - 1;
             next = reinterpret_cast<Node*>(data_begin);
-            for (T* itr = data_begin; itr != data_end; ++itr)
+            for (T* itr = data_begin; itr != data_last; ++itr)
             {
+                // O(n) to set next pointers, additional data members for HEAD/CAP could skip this but favoring size for now
                 reinterpret_cast<Node*>(itr)->next = reinterpret_cast<Node*>(itr + 1);
             }
             reinterpret_cast<Node*>(data_last)->next = nullptr;
@@ -110,29 +106,51 @@ namespace cyber
         }
 
         // manually free the current pool block memory
-        void free()
+        void free(void* block_data)
         {
-            Block* block_del = reinterpret_cast<Block*>(data);
+            assert(block_data);
+            Block* block_del = reinterpret_cast<Block*>(block_data);
             Block* block_prev = block_del->prev;
             Block* block_next = block_del->next;
-
-            block_del->next = nullptr;
-            block_del->prev = nullptr;
 
             if (block_prev)
             {
                 block_prev->next = block_next;
             }
 
-            ::operator delete(data, align_value);
+            ::operator delete(block_data, align_value);
         }
 
-        // std
+        // free all memory block allocations
+        void free()
+        {
+            Block* block_del = reinterpret_cast<Block*>(data);
+            assert(block_del);
+
+            // seek first block
+            Block* block_prev = block_del->prev;
+            while (block_prev)
+            {
+                block_del = block_prev;
+                block_prev = block_prev->prev;
+            }
+
+            // free each block from first to last
+            while (block_del)
+            {
+                Block* block_next = block_del->next;
+                this->free(block_del);
+                block_del = block_next;
+            }
+        }
+
+        // std compatible
+        // allocate one object from the pool, allocate new pool block if nescesary
         inline T* allocate(size_t n) noexcept
         {
             assert(n == 1 && "can only support one allocation at a time");
                         
-            // skip if can't grow TODO (extra template param)
+            // skip if can't grow TODO (extra template param to disable)
             if (next == nullptr)
             {
                 // allocate next block
@@ -148,7 +166,8 @@ namespace cyber
             return reinterpret_cast<T*>(cur);
         }
 
-        // std
+        // std compatible
+        // deallocate one object from the pool
         inline void deallocate(T* p, size_t bytes) noexcept
         {
             Node* next_old = reinterpret_cast<Node*>(next);
