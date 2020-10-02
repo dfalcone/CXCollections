@@ -15,7 +15,7 @@
 
 namespace CX {
     template<typename T>
-    struct atomic
+    struct alignas(4) atomic
     {
         static_assert(sizeof(T) <= 4, "true lock-free atomic operations do not work on types larger than 32 bits");
     private:
