@@ -172,7 +172,9 @@ namespace cyber
         {
             Node* next_old = reinterpret_cast<Node*>(next);
             Node* next_new = reinterpret_cast<Node*>(p);
+
             next_new->next = next_old;
+            next = next_new;
         }
     };
 
