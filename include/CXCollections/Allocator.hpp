@@ -1,10 +1,8 @@
-#ifndef CX_ALLOCATOR_H
-#define CX_ALLOCATOR_H
-
-
 // MIT License - CXCollections
 // Copyright(c) 2020 Dante Falcone (dantefalcone@gmail.com)
 
+#ifndef CX_ALLOCATOR_H
+#define CX_ALLOCATOR_H
 
 #include <stdint.h>
 #include <cstddef>
