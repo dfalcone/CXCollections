@@ -1,0 +1,3 @@
+C:/Coding/Projects/CXCollections/test/build2/CMakeFiles/CXTest.dir
+C:/Coding/Projects/CXCollections/test/build2/CMakeFiles/ALL_BUILD.dir
+C:/Coding/Projects/CXCollections/test/build2/CMakeFiles/ZERO_CHECK.dir
