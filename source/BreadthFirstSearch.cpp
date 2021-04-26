@@ -13,8 +13,6 @@ const std::vector<BFSNode*>* BreadthFirstSearch::FindPathReversed(BFSNode* pStar
     node_to_prev_node[pStart] = nullptr;
 
     BFSNode* pCurNode;
-    BFSNode* pNextNode;
-
     while (!frontier.empty())
     {
         pCurNode = frontier.front();
@@ -32,14 +30,13 @@ const std::vector<BFSNode*>* BreadthFirstSearch::FindPathReversed(BFSNode* pStar
             return &path;
         }
 
-        pNextNode = pCurNode->pNext;
-        while (pNextNode)
+        for (BFSNode* n : pCurNode->neighbors)
         {
-            auto prevItr = node_to_prev_node.find(pNextNode);
-            // if itr is end, does not exist
+            auto prevItr = node_to_prev_node.find(n);
+            // if itr not yet in map, it is shortest path
             if (prevItr == node_to_prev_node.end())
             {
-                frontier.push_back(pNextNode);
+                frontier.push_back(n);
                 // assign cur as prev to neighbor
                 prevItr->second = pCurNode;
             }

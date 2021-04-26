@@ -10,7 +10,7 @@ namespace cyber
 
 struct BFSNode
 {
-    BFSNode* pNext; // holds next neighbor, or next in path
+    std::vector<BFSNode*> neighbors;
 };
 
 // each instance of search object holds heap memory for path and search temp values
