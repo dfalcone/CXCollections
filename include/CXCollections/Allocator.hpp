@@ -327,7 +327,7 @@ namespace cyber
         constexpr FixedPoolAllocator() noexcept { this->malloc(capacity); }; // list does 1 allocation on construct
         constexpr FixedPoolAllocator(const FixedPoolAllocator& rhs) noexcept { data = rhs.data; next = rhs.next; };
         ~FixedPoolAllocator() noexcept { /*free(); data = nullptr; next = nullptr;*/ }
-        template <class Tx> constexpr FixedPoolAllocator(FixedPoolAllocator<Tx, alignment, capacity> const& rhs) noexcept { static_assert(typeid(Tx) == typeid(T), "");  data = rhs.data; next = rhs.next; }
+        template <class Tx> constexpr FixedPoolAllocator(FixedPoolAllocator<Tx, alignment, capacity> const& rhs) noexcept {  data = rhs.data; next = rhs.next; }
         template <typename Tx> struct rebind { typedef FixedPoolAllocator<Tx, alignment, capacity> other; };
         //--
 

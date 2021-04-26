@@ -147,9 +147,10 @@ struct Archetype : ArchetypeBase
     //}
 
     template<typename... Tcs>
-    void UpdateEntities(void(*callback)(unsigned, Tcs&...)) {
+    void UpdateEntities(void(*callback)(unsigned,Tcs&...)) {
         for (unsigned entity = 0; entity < entityCount; ++entity)
             callback(entity, (GetComponent<Tcs>(entity),...));
+            //[](...) {}((callback(entity, GetComponent<Tcs>(entity)), 0)...);
     }
 
     // generic callback - is casted to bitmask type?
@@ -158,15 +159,18 @@ struct Archetype : ArchetypeBase
             return;
         std::any* cs[2];
         std::any** citr = cs;
-
+    
         for (unsigned i = 0; i < 256; ++i) {
             if (!mask.test(i)) continue;
-            for (unsigned j = 0; j < std::tuple_size<Ts* ...>::value; ++j) {
-                
-            }
+            //for (unsigned j = 0; j < std::tuple_size<Ts* ...>::value; ++j) {
+            //    
+            //}
         }
-
+    
     }
+
+    //virtual void UpdateEntities(std::bitset<256> mask, void(*callback)(unsigned, ...)) final {};
+
 
 
 private:
